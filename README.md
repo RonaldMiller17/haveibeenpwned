@@ -21,3 +21,5 @@ Example output:
 [i] example@example.com has not been breached.
 
 EOF:w
+
+10/31/2020: Refractoring for python 3.7
