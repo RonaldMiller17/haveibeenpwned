@@ -21,7 +21,7 @@ def parse_file(fname):
         try:
             with open(full_path) as fp:
                 for cnt, line in enumerate(fp):
-                    print("Line {}: {}".format(cnt, line))
+                    # print("Line {}: {}".format(cnt, line))
                     emails.append(line.strip('\n'))
             fp.close()  # close file stream
             return True, emails
@@ -49,7 +49,8 @@ def pwn_email(email: str):
         "hibp-api-key": os.environ.get('HIBP_KEY')
     }
     response = requests.get(api_base_url + email, headers=headers)
-    print(f"Status code: {response.status_code}")
+    # print(f"Checking {email}...")
+    # print(f"Status code: {response.status_code}")
     if response.status_code == 200:
         return response.json() if response else None
     elif response.status_code == 404:
@@ -61,11 +62,24 @@ def pwn_email(email: str):
 def main():
     succeeded, emails = parse_file(input('Please enter a text file name: \n'))
     if succeeded:
+        f = open("pwned.txt", "w")
         for email in emails:
             response = pwn_email(email)
-            print(response)
-            print('waiting...')
+            breaches = []
+
+            # parse response items for breach matches
+            for item in response:
+                if 'Name' in item:
+                    breaches.append(item)
+            if len(breaches) >= 1:
+                write_msg = f"[{len(breaches)} breaches] detected for {email}"
+            else:
+                write_msg = f"[No breach] for {email}"
+            f.write(write_msg + '\n')
+            print(write_msg)
+            # print('waiting...')
             time.sleep(1.5)  # sleep 1500 ms to handle rate limiting
+        f.close()
     else:
         print('Unable to parse file')
         exit()
